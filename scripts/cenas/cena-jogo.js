@@ -13,6 +13,7 @@ export default class CenaJogo extends Phaser.Scene {
         this.index_inimigo = 0;
         this.gerenciaLevel = 0;
         this.personagemImortal = false;
+        this.music;
 
         // aqui temos os possiveis grupos de colisoes
         this.grupoPlataformas;
@@ -162,6 +163,7 @@ export default class CenaJogo extends Phaser.Scene {
         this.index_inimigo = 0;
         this.gerenciaLevel = 0
         this.fimJogo = false;
+        this.music.resume()
     }
 
     // aqui iremos gerenciar o game over
@@ -170,6 +172,7 @@ export default class CenaJogo extends Phaser.Scene {
             this.physics.pause();
             jogador.anims.stop()
             this.fimJogo = true;
+            this.music.stop();
 
 
             this.fimJogoTexto = this.add.text(400, 230, 'Game Over', { fontSize: '84px', fill: '#f00', fontweight: 'bold' });
@@ -335,6 +338,19 @@ export default class CenaJogo extends Phaser.Scene {
 
     // aqui criamos os objetos do jogo
     create() {
+
+        let config = {
+            mute: false,
+            volume: 0.1,
+            rate: 1,
+            detune: 0,
+            seek: 0,
+            loop: true,
+            delay: 0
+        }
+        this.music = this.sound.add('trilha_principal', config);
+        this.music.play();
+
         this.gerenciaImagensJogo()
         this.gerenciaTextosJogo()
         this.criaGrupoEjogador();
