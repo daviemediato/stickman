@@ -55,6 +55,7 @@ export default class CenaCarregamento extends Phaser.Scene {
         // aqui temos os assets de itens
         this.load.image('tesouro', 'imgs/gold.png')
         this.load.image('tempo', 'imgs/tempo.png')
+        this.load.image('imortal', 'imgs/imortal.png')
 
     }
 

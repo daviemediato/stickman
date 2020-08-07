@@ -12,12 +12,14 @@ export default class CenaJogo extends Phaser.Scene {
         this.tempo;
         this.index_inimigo = 0;
         this.gerenciaLevel = 0;
+        this.personagemImortal = false;
 
         // aqui temos os possiveis grupos de colisoes
         this.grupoPlataformas;
         this.grupoTesouros;
         this.grupoTempos;
         this.grupoInimigos;
+        this.grupoImortal;
         this.plataformaFixa;
         this.plataformaMovimentaH;
         this.plataformaMovimentaV;
@@ -28,6 +30,7 @@ export default class CenaJogo extends Phaser.Scene {
         this.fimJogoTexto;
         this.textoLevel;
         this.levelGeralTexto;
+        this.imortalTexto;
     }
 
 
@@ -54,20 +57,31 @@ export default class CenaJogo extends Phaser.Scene {
 
     }
 
-    gerenciaPlataformas() {
-        if (this.gerenciaLevel % 2 == 1) {
-            let x_um = Math.random() * (700) + 100;
-            let x_dois = Math.random() * (700) + 100;
-            this.grupoPlataformas.create(x_um, 300, 'plataforma');
-            this.grupoPlataformas.create(x_dois, 300, 'plataforma');
-        }
-        else {
-            this.grupoPlataformas.children.iterate(function (child) {
-                child.disableBody()
-                child.setVisible(false)
-            });
-        }
+    gerenciaItemImortal(jogador, item) {
+        item.disableBody(true, true);
+        this.personagemImortal = true;
+        this.imortalTexto = this.add.text(jogador.x, jogador.y - 20, 'I M O R T A L', { fontSize: '12px ', fill: '#ff1493', fontweight: 'bold' });
 
+        this.time.delayedCall(7000, () => {
+            this.personagemImortal = false;
+            this.imortalTexto.setText(' ');
+        })
+
+
+        if (this.grupoImortal.countActive(true) === 0) {
+
+            this.time.addEvent({
+                delay: Math.random() * (10000) + 5000,
+                callback: () => {
+                    this.grupoImortal.children.iterate(function (child) {
+                        child.x = Math.random() * (500) + 200
+                        child.enableBody(true, child.x, 0, true, true);
+
+                    });
+                },
+                loop: false
+            })
+        }
 
     }
 
@@ -105,8 +119,23 @@ export default class CenaJogo extends Phaser.Scene {
 
     }
 
+    // aqui gerenciamos as plataformas de forma dinamica
+    gerenciaPlataformas() {
+        if (this.gerenciaLevel % 2 == 1) {
+            let x_um = Math.random() * (700) + 100;
+            let x_dois = Math.random() * (700) + 100;
+            this.grupoPlataformas.create(x_um, 300, 'plataforma');
+            this.grupoPlataformas.create(x_dois, 300, 'plataforma');
+        }
+        else {
+            this.grupoPlataformas.children.iterate(function (child) {
+                child.disableBody()
+                child.setVisible(false)
+            });
+        }
 
 
+    }
 
 
     // aqui iremos gerenciar a atualizacao de levels
@@ -137,35 +166,36 @@ export default class CenaJogo extends Phaser.Scene {
 
     // aqui iremos gerenciar o game over
     gerenciaGameOver(jogador) {
-        this.physics.pause();
-        jogador.anims.stop()
-        this.fimJogo = true;
+        if (this.personagemImortal == false) {
+            this.physics.pause();
+            jogador.anims.stop()
+            this.fimJogo = true;
 
 
-        this.fimJogoTexto = this.add.text(400, 230, 'Game Over', { fontSize: '84px', fill: '#f00', fontweight: 'bold' });
-        this.fimJogoTexto.setOrigin(0.5);
-        this.fimJogoTextosetVisible = true;
-        const imagemRestartButton = this.add.image(700, 570, 'restart_button').setDepth(1)
-        imagemRestartButton.setVisible(true)
-        const imagemHover = this.add.image(100, 100, 'hover').setDepth(1)
-        imagemHover.setVisible(false)
+            this.fimJogoTexto = this.add.text(400, 230, 'Game Over', { fontSize: '84px', fill: '#f00', fontweight: 'bold' });
+            this.fimJogoTexto.setOrigin(0.5);
+            this.fimJogoTextosetVisible = true;
+            const imagemRestartButton = this.add.image(700, 570, 'restart_button').setDepth(1)
+            imagemRestartButton.setVisible(true)
+            const imagemHover = this.add.image(100, 100, 'hover').setDepth(1)
+            imagemHover.setVisible(false)
 
-        imagemRestartButton.setInteractive()
+            imagemRestartButton.setInteractive()
 
-        imagemRestartButton.on('pointerover', () => {
-            imagemHover.setVisible(true);
-            imagemHover.x = imagemRestartButton.x - imagemRestartButton.width;
-            imagemHover.y = imagemRestartButton.y;
-        })
-        imagemRestartButton.on('pointerout', () => {
-            imagemHover.setVisible(false);
-        })
-        imagemRestartButton.on('pointerdown', () => {
-            this.scene.start('CenaMenu')
-            this.gerenciaIniciaJogo()
-            imagemHover.setVisible(true)
-        })
-
+            imagemRestartButton.on('pointerover', () => {
+                imagemHover.setVisible(true);
+                imagemHover.x = imagemRestartButton.x - imagemRestartButton.width;
+                imagemHover.y = imagemRestartButton.y;
+            })
+            imagemRestartButton.on('pointerout', () => {
+                imagemHover.setVisible(false);
+            })
+            imagemRestartButton.on('pointerdown', () => {
+                this.scene.start('CenaMenu')
+                this.gerenciaIniciaJogo()
+                imagemHover.setVisible(true)
+            })
+        }
     }
 
     // aqui adicionamos as plataformas dinamicamente de acordo com o level
@@ -204,6 +234,12 @@ export default class CenaJogo extends Phaser.Scene {
             setXY: { x: 150, y: 0, stepX: 150 }
         })
 
+        this.grupoImortal = this.physics.add.group({
+            key: 'imortal',
+            repeat: 0,
+            setXY: { x: 350, y: 0, stepX: 150 }
+        })
+
         this.grupoTesouros.children.iterate(function (child) {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
         })
@@ -221,24 +257,30 @@ export default class CenaJogo extends Phaser.Scene {
         this.physics.add.collider(this.grupoTesouros, this.plataformaFixa);
         this.physics.add.collider(this.grupoTempos, this.plataformaFixa);
         this.physics.add.collider(this.grupoInimigos, this.plataformaFixa);
+        this.physics.add.collider(this.grupoImortal, this.plataformaFixa);
 
         this.physics.add.collider(this.jogador.sprite, this.plataformaMovimentaH);
         this.physics.add.collider(this.grupoTesouros, this.plataformaMovimentaH)
         this.physics.add.collider(this.grupoTempos, this.plataformaMovimentaH)
         this.physics.add.collider(this.grupoInimigos, this.plataformaMovimentaH);
+        this.physics.add.collider(this.grupoImortal, this.plataformaMovimentaH);
 
         this.physics.add.collider(this.jogador.sprite, this.plataformaMovimentaV);
         this.physics.add.collider(this.grupoTesouros, this.plataformaMovimentaV)
         this.physics.add.collider(this.grupoTempos, this.plataformaMovimentaV)
         this.physics.add.collider(this.grupoInimigos, this.plataformaMovimentaV);
+        this.physics.add.collider(this.grupoImortal, this.plataformaMovimentaV);
 
         this.physics.add.collider(this.jogador.sprite, this.grupoPlataformas);
         this.physics.add.collider(this.grupoTesouros, this.grupoPlataformas);
         this.physics.add.collider(this.grupoTempos, this.grupoPlataformas);
         this.physics.add.collider(this.grupoInimigos, this.grupoPlataformas);
+        this.physics.add.collider(this.grupoImortal, this.grupoPlataformas);
 
         this.physics.add.overlap(this.jogador.sprite, this.grupoTesouros, this.gerenciaItemPontuacao, null, this)
         this.physics.add.overlap(this.jogador.sprite, this.grupoTempos, this.gerenciaItemTempo, null, this)
+        this.physics.add.overlap(this.jogador.sprite, this.grupoImortal, this.gerenciaItemImortal, null, this)
+
         this.physics.add.collider(this.jogador.sprite, this.grupoInimigos, this.gerenciaGameOver, null, this);
 
         this.teclas = this.input.keyboard.createCursorKeys();
@@ -304,8 +346,12 @@ export default class CenaJogo extends Phaser.Scene {
     update() {
         const jogador = this.jogador.sprite;
 
+        if (this.personagemImortal == true) {
+            this.imortalTexto.x = jogador.x - 50
+            this.imortalTexto.y = jogador.y - 40
+        }
 
-        if (this.tempo == 0) {
+        if (this.tempo <= 0) {
             this.gerenciaGameOver(jogador)
         }
 
