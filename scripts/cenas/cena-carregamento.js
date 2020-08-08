@@ -56,6 +56,7 @@ export default class CenaCarregamento extends Phaser.Scene {
         this.load.image('tesouro', 'imgs/gold.png')
         this.load.image('tempo', 'imgs/tempo.png')
         this.load.image('imortal', 'imgs/imortal.png')
+        this.load.image('vida', 'imgs/vida.png')
 
         // aqui temos os asset de audio
         this.load.audio('trilha_principal', 'sounds/audio_trilha.mp3')

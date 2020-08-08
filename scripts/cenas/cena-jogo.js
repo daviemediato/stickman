@@ -14,6 +14,7 @@ export default class CenaJogo extends Phaser.Scene {
         this.gerenciaLevel = 0;
         this.personagemImortal = false;
         this.music;
+        this.vidaPersonagem;
 
         // aqui temos os possiveis grupos de colisoes
         this.grupoPlataformas;
@@ -21,6 +22,7 @@ export default class CenaJogo extends Phaser.Scene {
         this.grupoTempos;
         this.grupoInimigos;
         this.grupoImortal;
+        this.grupoVida;
         this.plataformaFixa;
         this.plataformaMovimentaH;
         this.plataformaMovimentaV;
@@ -38,12 +40,12 @@ export default class CenaJogo extends Phaser.Scene {
     // aqui gerenciamos o item tempo
     gerenciaItemTempo(jogador, item) {
         item.disableBody(true, true);
-        this.tempo += Math.floor(Math.random() * (15) + 5);
+        this.tempo += Math.floor(Math.random() * (20) + 5);
 
         if (this.grupoTempos.countActive(true) === 0) {
 
             this.time.addEvent({
-                delay: Math.random() * (2000) + 5000,
+                delay: Math.random() * (5000) + 5000,
                 callback: () => {
                     this.grupoTempos.children.iterate(function (child) {
                         child.x = Math.random() * (500) + 200
@@ -58,12 +60,13 @@ export default class CenaJogo extends Phaser.Scene {
 
     }
 
+    // aqui gerenciamos o item imortal
     gerenciaItemImortal(jogador, item) {
         item.disableBody(true, true);
         this.personagemImortal = true;
-        this.imortalTexto = this.add.text(jogador.x, jogador.y - 20, 'I M O R T A L', { fontSize: '12px ', fill: '#ff1493', fontweight: 'bold' });
+        this.imortalTexto = this.add.text(jogador.x, jogador.y - 20, 'I M M O R T A L', { fontSize: '12px ', fill: '#ff1493', fontweight: 'bold' });
 
-        this.time.delayedCall(7000, () => {
+        this.time.delayedCall(10000, () => {
             this.personagemImortal = false;
             this.imortalTexto.setText(' ');
         })
@@ -72,7 +75,7 @@ export default class CenaJogo extends Phaser.Scene {
         if (this.grupoImortal.countActive(true) === 0) {
 
             this.time.addEvent({
-                delay: Math.random() * (10000) + 5000,
+                delay: Math.random() * (10000) + 10000,
                 callback: () => {
                     this.grupoImortal.children.iterate(function (child) {
                         child.x = Math.random() * (500) + 200
@@ -97,6 +100,7 @@ export default class CenaJogo extends Phaser.Scene {
             this.grupoTesouros.children.iterate(function (child) {
                 child.x = Math.random() * (700) + 40
                 child.enableBody(true, child.x, 0, true, true);
+                child.setCollideWorldBounds(true);
             });
 
             let x = (jogador.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
@@ -123,10 +127,12 @@ export default class CenaJogo extends Phaser.Scene {
     // aqui gerenciamos as plataformas de forma dinamica
     gerenciaPlataformas() {
         if (this.gerenciaLevel % 2 == 1) {
-            let x_um = Math.random() * (700) + 100;
-            let x_dois = Math.random() * (700) + 100;
-            this.grupoPlataformas.create(x_um, 300, 'plataforma');
-            this.grupoPlataformas.create(x_dois, 300, 'plataforma');
+            let qntdPlataformas = Math.floor(Math.random() * (2) + 2);
+            for (let i = 0; i <= qntdPlataformas; i++) {
+                let x_plat = Math.random() * (600) + 200;
+                let y_plat = Math.random() * (100) + 200;
+                this.grupoPlataformas.create(x_plat, y_plat, 'plataforma');
+            }
         }
         else {
             this.grupoPlataformas.children.iterate(function (child) {
@@ -162,6 +168,7 @@ export default class CenaJogo extends Phaser.Scene {
         this.tempo = 10;
         this.index_inimigo = 0;
         this.gerenciaLevel = 0
+        this.vidaPersonagem = 1;
         this.fimJogo = false;
         this.music.resume()
     }
@@ -331,14 +338,8 @@ export default class CenaJogo extends Phaser.Scene {
         });
     }
 
-    //  aqui n iremos utilizar, ja que temos uma cena de carregamento
-    preload() {
-
-    }
-
-    // aqui criamos os objetos do jogo
-    create() {
-
+    // aqui gerenciamos os sons do jogo
+    gerenciaSonsJogo() {
         let config = {
             mute: false,
             volume: 0.1,
@@ -350,9 +351,18 @@ export default class CenaJogo extends Phaser.Scene {
         }
         this.music = this.sound.add('trilha_principal', config);
         this.music.play();
+    }
 
-        this.gerenciaImagensJogo()
-        this.gerenciaTextosJogo()
+    //  aqui n iremos utilizar, ja que temos uma cena de carregamento
+    preload() {
+
+    }
+
+    // aqui criamos os objetos do jogo
+    create() {
+        this.gerenciaSonsJogo();
+        this.gerenciaImagensJogo();
+        this.gerenciaTextosJogo();
         this.criaGrupoEjogador();
         this.criaPlataformas();
         this.adicionaFisicasEteclado();
@@ -391,6 +401,10 @@ export default class CenaJogo extends Phaser.Scene {
                 jogador.setVelocityY(-150);
                 jogador.anims.play('pulando')
             }
+            if (this.teclas.down.isDown && !jogador.body.touching.down) {
+                jogador.setVelocityY(150);
+            }
+
             if (this.plataformaMovimentaH.x >= 500) {
                 this.plataformaMovimentaH.setVelocityX(-50);
             }
