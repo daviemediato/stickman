@@ -40,7 +40,7 @@ export default class CenaJogo extends Phaser.Scene {
     // aqui gerenciamos o item tempo
     gerenciaItemTempo(jogador, item) {
         item.disableBody(true, true);
-        this.tempo += Math.floor(Math.random() * (20) + 5);
+        this.tempo += Math.floor(Math.random() * (200) + 150);
 
         if (this.grupoTempos.countActive(true) === 0) {
 
@@ -408,7 +408,7 @@ export default class CenaJogo extends Phaser.Scene {
             if (this.plataformaMovimentaH.x >= 500) {
                 this.plataformaMovimentaH.setVelocityX(-50);
             }
-            else if (this.plataformaMovimentaH.x <= 300) {
+            else if (this.plataformaMovimentaH.x <= 200) {
                 this.plataformaMovimentaH.setVelocityX(50);
             }
             if (this.plataformaMovimentaV.y >= 400) {
