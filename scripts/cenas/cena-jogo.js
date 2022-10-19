@@ -8,6 +8,7 @@ export default class CenaJogo extends Phaser.Scene {
 
         // aqui as variaveis de controle do jogo
         this.pontuacao = 0;
+        this.floorHeight = 200;
         this.fimJogo = false;
         this.tempo;
         this.index_inimigo = 0;
@@ -40,7 +41,7 @@ export default class CenaJogo extends Phaser.Scene {
     // aqui gerenciamos o item tempo
     gerenciaItemTempo(jogador, item) {
         item.disableBody(true, true);
-        this.tempo += Math.floor(Math.random() * (200) + 150);
+        this.tempo += Math.floor(Math.random() * (this.floorHeight) + 150);
 
         if (this.grupoTempos.countActive(true) === 0) {
 
@@ -48,7 +49,7 @@ export default class CenaJogo extends Phaser.Scene {
                 delay: Math.random() * (5000) + 5000,
                 callback: () => {
                     this.grupoTempos.children.iterate(function (child) {
-                        child.x = Math.random() * (500) + 200
+                        child.x = Math.random() * (500) + this.floorHeight
                         child.enableBody(true, child.x, 0, true, true);
 
                     });
@@ -78,7 +79,7 @@ export default class CenaJogo extends Phaser.Scene {
                 delay: Math.random() * (10000) + 10000,
                 callback: () => {
                     this.grupoImortal.children.iterate(function (child) {
-                        child.x = Math.random() * (500) + 200
+                        child.x = Math.random() * (500) + this.floorHeight
                         child.enableBody(true, child.x, 0, true, true);
 
                     });
@@ -103,7 +104,7 @@ export default class CenaJogo extends Phaser.Scene {
                 child.setCollideWorldBounds(true);
             });
 
-            let x = (jogador.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+            let x = (jogador.x < 2 * this.floorHeight) ? Phaser.Math.Between(2 * this.floorHeight, 4 * this.floorHeight) : Phaser.Math.Between(0, 2 * this.floorHeight);
             let inimigo = this.grupoInimigos.create(x, 16, `inimigo_${this.index_inimigo}`);
             this.index_inimigo++;
 
@@ -116,7 +117,7 @@ export default class CenaJogo extends Phaser.Scene {
 
             inimigo.setBounce(1);
             inimigo.setCollideWorldBounds(true);
-            inimigo.setVelocity(Phaser.Math.Between(-200, 200), 20);
+            inimigo.setVelocity(Phaser.Math.Between(-this.floorHeight, this.floorHeight), 20);
             inimigo.allowGravity = false;
 
 
@@ -126,11 +127,11 @@ export default class CenaJogo extends Phaser.Scene {
 
     // aqui gerenciamos as plataformas de forma dinamica
     gerenciaPlataformas() {
-        if (this.gerenciaLevel % 2 == 1) {
-            let qntdPlataformas = Math.floor(Math.random() * (2) + 2);
+        if (this.gerenciaLevel % 2 === 1) {
+            let qntdPlataformas = Math.floor(Math.random() * 2 + 2);
             for (let i = 0; i <= qntdPlataformas; i++) {
-                let x_plat = Math.random() * (600) + 200;
-                let y_plat = Math.random() * (100) + 200;
+                let x_plat = Math.random() * (600) + this.floorHeight;
+                let y_plat = Math.random() * (100) + this.floorHeight;
                 this.grupoPlataformas.create(x_plat, y_plat, 'plataforma');
             }
         }
@@ -182,7 +183,7 @@ export default class CenaJogo extends Phaser.Scene {
             this.music.stop();
 
 
-            this.fimJogoTexto = this.add.text(400, 230, 'Game Over', { fontSize: '84px', fill: '#f00', fontweight: 'bold' });
+            this.fimJogoTexto = this.add.text(2 * this.floorHeight, 230, 'Game Over', { fontSize: '84px', fill: '#f00', fontweight: 'bold' });
             this.fimJogoTexto.setOrigin(0.5);
             this.fimJogoTextosetVisible = true;
             const imagemRestartButton = this.add.image(700, 570, 'restart_button').setDepth(1)
@@ -215,12 +216,12 @@ export default class CenaJogo extends Phaser.Scene {
         this.plataformaFixa = this.physics.add.staticGroup();
         this.plataformaFixa.create(0, 477, 'chao').setOrigin(0, 0).refreshBody();
 
-        this.plataformaMovimentaH = this.physics.add.image(400, 400, 'plataforma');
+        this.plataformaMovimentaH = this.physics.add.image(2 * this.floorHeight, 2 * this.floorHeight, 'plataforma');
         this.plataformaMovimentaH.setImmovable(true);
         this.plataformaMovimentaH.body.allowGravity = false;
         this.plataformaMovimentaH.setVelocityX(50);
 
-        this.plataformaMovimentaV = this.physics.add.image(100, 200, 'plataforma');
+        this.plataformaMovimentaV = this.physics.add.image(100, this.floorHeight, 'plataforma');
         this.plataformaMovimentaV.setImmovable(true);
         this.plataformaMovimentaV.body.allowGravity = false;
         this.plataformaMovimentaV.setVelocityY(50);
@@ -408,13 +409,13 @@ export default class CenaJogo extends Phaser.Scene {
             if (this.plataformaMovimentaH.x >= 500) {
                 this.plataformaMovimentaH.setVelocityX(-50);
             }
-            else if (this.plataformaMovimentaH.x <= 200) {
+            else if (this.plataformaMovimentaH.x <= this.floorHeight) {
                 this.plataformaMovimentaH.setVelocityX(50);
             }
-            if (this.plataformaMovimentaV.y >= 400) {
+            if (this.plataformaMovimentaV.y >= 2 * this.floorHeight) {
                 this.plataformaMovimentaV.setVelocityY(-50);
             }
-            else if (this.plataformaMovimentaV.y <= 200) {
+            else if (this.plataformaMovimentaV.y <= this.floorHeight) {
                 this.plataformaMovimentaV.setVelocityY(50);
             }
         }
